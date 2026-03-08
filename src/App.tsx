@@ -8,7 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import VerifyOTP from "./pages/VerifyOTP";
+
 import Dashboard from "./pages/Dashboard";
 import WalletPage from "./pages/WalletPage";
 import LoansPage from "./pages/LoansPage";

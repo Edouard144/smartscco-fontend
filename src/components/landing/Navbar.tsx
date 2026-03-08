@@ -81,9 +81,11 @@ const Navbar = () => {
                 {l.label}
               </a>
             ))}
-            <Button className="bg-gradient-accent text-primary-foreground mt-2">
-              Get Started
-            </Button>
+            <Link to="/register">
+              <Button className="bg-gradient-accent text-primary-foreground mt-2 w-full">
+                Get Started
+              </Button>
+            </Link>
           </div>
         </motion.div>
       )}

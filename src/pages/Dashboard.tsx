@@ -6,37 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import PortalLayout from "@/components/portal/PortalLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import api from "@/lib/api";
+import { mockStore } from "@/lib/mockData";
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [balance, setBalance] = useState<any>(null);
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [loans, setLoans] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [balRes, txRes, loanRes] = await Promise.allSettled([
-          api.get("/wallet/balance"),
-          api.get("/wallet/transactions?limit=5"),
-          api.get("/loans/my-loans"),
-        ]);
-        if (balRes.status === "fulfilled") setBalance(balRes.value.data);
-        if (txRes.status === "fulfilled") setTransactions(txRes.value.data.transactions || txRes.value.data || []);
-        if (loanRes.status === "fulfilled") setLoans(loanRes.value.data.loans || loanRes.value.data || []);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  const balance = mockStore.getBalance();
+  const transactions = mockStore.getTransactions();
+  const loans = mockStore.getLoans(user?.id);
 
   const stats = [
     {
       label: "Account Balance",
-      value: balance ? `${Number(balance.balance || balance.amount || 0).toLocaleString()} RWF` : "---",
+      value: `${balance.toLocaleString()} RWF`,
       icon: Wallet,
       color: "bg-primary/10 text-primary",
     },
@@ -64,7 +45,6 @@ const Dashboard = () => {
           <p className="text-muted-foreground mt-1">Here's your financial overview</p>
         </div>
 
-        {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {stats.map((stat, i) => (
             <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
@@ -83,7 +63,6 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Quick Actions */}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { label: "Send Money", icon: ArrowUpRight, href: "/wallet", color: "bg-primary" },
@@ -102,7 +81,6 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Recent Transactions */}
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-display text-lg">Recent Transactions</CardTitle>
@@ -123,7 +101,7 @@ const Dashboard = () => {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">{tx.description || tx.type}</p>
-                        <p className="text-xs text-muted-foreground">{new Date(tx.created_at || tx.date).toLocaleDateString()}</p>
+                        <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <span className={`text-sm font-semibold ${

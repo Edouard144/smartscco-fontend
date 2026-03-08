@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import api from "@/lib/api";
+import { mockStore } from "@/lib/mockData";
 
 interface User {
   id: string;
@@ -13,8 +13,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string, method: string) => Promise<{ success: boolean; message?: string }>;
-  verifyOtp: (email: string, otp: string, method: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  register: (data: { full_name: string; email: string; phone: string; national_id: string; password: string }) => Promise<{ success: boolean }>;
   logout: () => void;
   isAdmin: boolean;
 }
@@ -26,44 +26,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      api.get("/users/profile")
-        .then((res) => setUser(res.data.user || res.data))
-        .catch(() => {
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
+    const stored = localStorage.getItem("mockUser");
+    if (stored) {
+      try { setUser(JSON.parse(stored)); } catch { localStorage.removeItem("mockUser"); }
     }
+    setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string, method: string) => {
-    const res = await api.post("/auth/login", { email, password, method });
-    return { success: true, message: res.data.message };
+  const login = async (email: string, password: string) => {
+    const found = mockStore.findUser(email, password);
+    if (!found) throw new Error("Invalid email or password");
+    const u: User = { id: found.id, email: found.email, full_name: found.full_name, role: found.role, phone: found.phone, national_id: found.national_id };
+    setUser(u);
+    localStorage.setItem("mockUser", JSON.stringify(u));
+    return { success: true, message: "Login successful!" };
   };
 
-  const verifyOtp = async (email: string, otp: string, method: string) => {
-    const res = await api.post("/auth/verify-otp", { email, otp, method });
-    localStorage.setItem("accessToken", res.data.accessToken);
-    localStorage.setItem("refreshToken", res.data.refreshToken);
-    setUser(res.data.user);
-    return true;
+  const register = async (data: { full_name: string; email: string; phone: string; national_id: string; password: string }) => {
+    const newUser = mockStore.registerUser(data);
+    return { success: true };
   };
 
   const logout = () => {
-    api.post("/auth/logout").catch(() => {});
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("mockUser");
     setUser(null);
   };
 
   const isAdmin = user?.role === "admin";
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, verifyOtp, logout, isAdmin }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

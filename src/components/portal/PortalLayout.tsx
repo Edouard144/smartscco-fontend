@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const memberLinks = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },

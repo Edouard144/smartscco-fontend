@@ -111,6 +111,7 @@ const PortalLayout = ({ children }: { children: React.ReactNode }) => {
           </button>
           <div className="flex-1" />
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-4 w-4" />
             </Button>

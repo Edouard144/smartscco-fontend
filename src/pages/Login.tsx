@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Shield, Mail, Phone, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Shield, Mail, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,6 @@ import { toast } from "sonner";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [method, setMethod] = useState<"email" | "phone">("email");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -25,11 +24,11 @@ const Login = () => {
     }
     setLoading(true);
     try {
-      const result = await login(email, password, method);
-      toast.success(result.message || "OTP sent successfully");
-      navigate("/verify-otp", { state: { email, method } });
+      await login(email, password);
+      toast.success("Login successful!");
+      navigate("/dashboard");
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Login failed");
+      toast.error(error.message || "Invalid credentials");
     } finally {
       setLoading(false);
     }
@@ -57,15 +56,24 @@ const Login = () => {
             Welcome Back
           </h1>
           <p className="text-primary-foreground/60 text-lg">
-            Access your secure banking portal with dual OTP verification for maximum security.
+            Access your secure banking portal with industry-leading security.
           </p>
           <div className="mt-8 space-y-3">
-            {["Bank-grade encryption", "Dual OTP verification", "24/7 secure access"].map((f) => (
+            {["Bank-grade encryption", "Secure authentication", "24/7 access"].map((f) => (
               <div key={f} className="flex items-center gap-3 text-primary-foreground/70">
                 <div className="h-2 w-2 rounded-full bg-emerald" />
                 <span className="text-sm">{f}</span>
               </div>
             ))}
+          </div>
+
+          <div className="mt-10 rounded-xl bg-primary-foreground/10 p-4 border border-primary-foreground/20">
+            <p className="text-primary-foreground/80 text-sm font-medium mb-2">Demo Accounts:</p>
+            <div className="space-y-1 text-primary-foreground/60 text-xs">
+              <p><strong className="text-primary-foreground/80">Admin:</strong> admin@smartscco.com / admin123</p>
+              <p><strong className="text-primary-foreground/80">User:</strong> user@smartscco.com / user123</p>
+              <p><strong className="text-primary-foreground/80">Demo:</strong> demo@smartscco.com / demo123</p>
+            </div>
           </div>
         </motion.div>
       </div>
@@ -90,7 +98,16 @@ const Login = () => {
           <h2 className="font-display text-2xl font-bold text-foreground">Sign In</h2>
           <p className="mt-2 text-muted-foreground">Enter your credentials to continue</p>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          {/* Mobile demo credentials */}
+          <div className="lg:hidden mt-4 rounded-xl bg-muted p-3 border border-border">
+            <p className="text-foreground text-xs font-medium mb-1">Demo Accounts:</p>
+            <div className="space-y-0.5 text-muted-foreground text-xs">
+              <p><strong>Admin:</strong> admin@smartscco.com / admin123</p>
+              <p><strong>User:</strong> user@smartscco.com / user123</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <Input
@@ -118,36 +135,6 @@ const Login = () => {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>OTP Delivery Method</Label>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setMethod("email")}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
-                    method === "email"
-                      ? "border-primary bg-primary/5 text-primary"
-                      : "border-border text-muted-foreground hover:border-primary/50"
-                  }`}
-                >
-                  <Mail className="h-4 w-4" />
-                  Email
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMethod("phone")}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
-                    method === "phone"
-                      ? "border-primary bg-primary/5 text-primary"
-                      : "border-border text-muted-foreground hover:border-primary/50"
-                  }`}
-                >
-                  <Phone className="h-4 w-4" />
-                  Phone
                 </button>
               </div>
             </div>

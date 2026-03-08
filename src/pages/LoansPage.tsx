@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { CreditCard, Loader2, Plus } from "lucide-react";
+import { CreditCard, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PortalLayout from "@/components/portal/PortalLayout";
-import api from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { mockStore } from "@/lib/mockData";
 import { toast } from "sonner";
 
 const statusColor: Record<string, string> = {
@@ -20,56 +21,33 @@ const statusColor: Record<string, string> = {
 };
 
 const LoansPage = () => {
-  const [loans, setLoans] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const [, forceUpdate] = useState(0);
+  const refresh = () => forceUpdate(n => n + 1);
   const [applyOpen, setApplyOpen] = useState(false);
   const [repayOpen, setRepayOpen] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState(false);
   const [form, setForm] = useState({ amount: "", purpose: "", term_months: "12" });
   const [repayAmount, setRepayAmount] = useState("");
 
-  const fetchLoans = async () => {
-    try {
-      const res = await api.get("/loans/my-loans");
-      setLoans(res.data.loans || res.data || []);
-    } finally {
-      setLoading(false);
-    }
+  const loans = mockStore.getLoans(user?.id);
+
+  const handleApply = () => {
+    mockStore.applyLoan(user?.id || "", Number(form.amount), form.purpose, Number(form.term_months));
+    toast.success("Loan application submitted!");
+    setApplyOpen(false);
+    setForm({ amount: "", purpose: "", term_months: "12" });
+    refresh();
   };
 
-  useEffect(() => { fetchLoans(); }, []);
-
-  const handleApply = async () => {
-    setActionLoading(true);
+  const handleRepay = (loanId: string) => {
     try {
-      await api.post("/loans/apply", {
-        amount: Number(form.amount),
-        purpose: form.purpose,
-        term_months: Number(form.term_months),
-      });
-      toast.success("Loan application submitted!");
-      setApplyOpen(false);
-      setForm({ amount: "", purpose: "", term_months: "12" });
-      fetchLoans();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || "Application failed");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleRepay = async (loanId: string) => {
-    setActionLoading(true);
-    try {
-      await api.post(`/loans/repay/${loanId}`, { amount: Number(repayAmount) });
+      mockStore.repayLoan(loanId, Number(repayAmount));
       toast.success("Repayment successful!");
       setRepayOpen(null);
       setRepayAmount("");
-      fetchLoans();
+      refresh();
     } catch (err: any) {
-      toast.error(err.response?.data?.error || "Repayment failed");
-    } finally {
-      setActionLoading(false);
+      toast.error(err.message);
     }
   };
 
@@ -93,9 +71,7 @@ const LoansPage = () => {
                 <div className="space-y-2"><Label>Amount (RWF)</Label><Input type="number" placeholder="100000" value={form.amount} onChange={(e) => setForm(p => ({...p, amount: e.target.value}))} /></div>
                 <div className="space-y-2"><Label>Purpose</Label><Input placeholder="Business expansion" value={form.purpose} onChange={(e) => setForm(p => ({...p, purpose: e.target.value}))} /></div>
                 <div className="space-y-2"><Label>Term (months)</Label><Input type="number" placeholder="12" value={form.term_months} onChange={(e) => setForm(p => ({...p, term_months: e.target.value}))} /></div>
-                <Button onClick={handleApply} disabled={actionLoading} className="w-full bg-gradient-accent text-primary-foreground">
-                  {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} Submit Application
-                </Button>
+                <Button onClick={handleApply} className="w-full bg-gradient-accent text-primary-foreground">Submit Application</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -141,9 +117,7 @@ const LoansPage = () => {
                           <DialogHeader><DialogTitle>Loan Repayment</DialogTitle></DialogHeader>
                           <div className="space-y-4 pt-4">
                             <div className="space-y-2"><Label>Amount (RWF)</Label><Input type="number" placeholder="25000" value={repayAmount} onChange={(e) => setRepayAmount(e.target.value)} /></div>
-                            <Button onClick={() => handleRepay(loan.id)} disabled={actionLoading} className="w-full bg-gradient-accent text-primary-foreground">
-                              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} Pay
-                            </Button>
+                            <Button onClick={() => handleRepay(loan.id)} className="w-full bg-gradient-accent text-primary-foreground">Pay</Button>
                           </div>
                         </DialogContent>
                       </Dialog>

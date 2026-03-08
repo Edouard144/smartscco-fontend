@@ -1,56 +1,35 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, Plus, Trash2, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, Plus, Trash2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PortalLayout from "@/components/portal/PortalLayout";
-import api from "@/lib/api";
+import { mockStore } from "@/lib/mockData";
 import { toast } from "sonner";
 
 const BeneficiariesPage = () => {
-  const [beneficiaries, setBeneficiaries] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, forceUpdate] = useState(0);
+  const refresh = () => forceUpdate(n => n + 1);
   const [addOpen, setAddOpen] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
   const [form, setForm] = useState({ email: "", full_name: "", phone: "" });
 
-  const fetchBeneficiaries = async () => {
-    try {
-      const res = await api.get("/beneficiaries");
-      setBeneficiaries(res.data.beneficiaries || res.data || []);
-    } finally {
-      setLoading(false);
-    }
+  const beneficiaries = mockStore.getBeneficiaries();
+
+  const handleAdd = () => {
+    mockStore.addBeneficiary(form);
+    toast.success("Beneficiary added!");
+    setAddOpen(false);
+    setForm({ email: "", full_name: "", phone: "" });
+    refresh();
   };
 
-  useEffect(() => { fetchBeneficiaries(); }, []);
-
-  const handleAdd = async () => {
-    setActionLoading(true);
-    try {
-      await api.post("/beneficiaries", form);
-      toast.success("Beneficiary added!");
-      setAddOpen(false);
-      setForm({ email: "", full_name: "", phone: "" });
-      fetchBeneficiaries();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || "Failed to add beneficiary");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleRemove = async (id: string) => {
-    try {
-      await api.delete(`/beneficiaries/${id}`);
-      toast.success("Beneficiary removed");
-      fetchBeneficiaries();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || "Failed to remove");
-    }
+  const handleRemove = (id: string) => {
+    mockStore.removeBeneficiary(id);
+    toast.success("Beneficiary removed");
+    refresh();
   };
 
   return (
@@ -73,9 +52,7 @@ const BeneficiariesPage = () => {
                 <div className="space-y-2"><Label>Full Name</Label><Input placeholder="John Doe" value={form.full_name} onChange={(e) => setForm(p => ({...p, full_name: e.target.value}))} /></div>
                 <div className="space-y-2"><Label>Email</Label><Input type="email" placeholder="john@example.com" value={form.email} onChange={(e) => setForm(p => ({...p, email: e.target.value}))} /></div>
                 <div className="space-y-2"><Label>Phone</Label><Input placeholder="+250788123456" value={form.phone} onChange={(e) => setForm(p => ({...p, phone: e.target.value}))} /></div>
-                <Button onClick={handleAdd} disabled={actionLoading} className="w-full bg-gradient-accent text-primary-foreground">
-                  {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} Add
-                </Button>
+                <Button onClick={handleAdd} className="w-full bg-gradient-accent text-primary-foreground">Add</Button>
               </div>
             </DialogContent>
           </Dialog>

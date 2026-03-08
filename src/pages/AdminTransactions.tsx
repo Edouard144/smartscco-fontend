@@ -1,24 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Search, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import PortalLayout from "@/components/portal/PortalLayout";
-import api from "@/lib/api";
+import { mockStore } from "@/lib/mockData";
 
 const AdminTransactions = () => {
-  const [transactions, setTransactions] = useState<any[]>([]);
   const [search, setSearch] = useState("");
-
-  const fetchTx = async () => {
-    try {
-      const res = await api.get(`/admin/transactions?search=${search}`);
-      setTransactions(res.data.transactions || res.data || []);
-    } catch {}
-  };
-
-  useEffect(() => { fetchTx(); }, []);
+  const transactions = mockStore.getTransactions(search);
 
   return (
     <PortalLayout>
@@ -30,7 +21,7 @@ const AdminTransactions = () => {
           </div>
           <div className="relative w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search transactions..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => e.key === "Enter" && fetchTx()} />
+            <Input placeholder="Search transactions..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
         </div>
 
@@ -61,14 +52,14 @@ const AdminTransactions = () => {
                         <span className="capitalize">{tx.type}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{tx.user_email || tx.email || "—"}</TableCell>
+                    <TableCell>{tx.user_email || "—"}</TableCell>
                     <TableCell className="font-semibold">{Number(tx.amount).toLocaleString()} RWF</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={tx.status === "completed" ? "bg-accent/10 text-accent" : "bg-gold/10 text-gold"}>
                         {tx.status || "completed"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{tx.created_at ? new Date(tx.created_at).toLocaleDateString() : "—"}</TableCell>
+                    <TableCell>{new Date(tx.created_at).toLocaleDateString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

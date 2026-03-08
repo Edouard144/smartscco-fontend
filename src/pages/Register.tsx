@@ -5,13 +5,14 @@ import { Shield, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import api from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const Register = () => {
   const [form, setForm] = useState({ full_name: "", email: "", phone: "", national_id: "", password: "", confirmPassword: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const update = (key: string, value: string) => setForm((p) => ({ ...p, [key]: value }));
@@ -28,7 +29,7 @@ const Register = () => {
     }
     setLoading(true);
     try {
-      await api.post("/auth/register", {
+      await register({
         full_name: form.full_name,
         email: form.email,
         phone: form.phone,
@@ -38,7 +39,7 @@ const Register = () => {
       toast.success("Registration successful! Please login.");
       navigate("/login");
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Registration failed");
+      toast.error(error.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -46,7 +47,6 @@ const Register = () => {
 
   return (
     <div className="flex min-h-screen">
-      {/* Left branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-hero items-center justify-center p-12">
         <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} className="max-w-md">
           <div className="flex items-center gap-3 mb-8">
@@ -66,7 +66,6 @@ const Register = () => {
         </motion.div>
       </div>
 
-      {/* Right form */}
       <div className="flex w-full lg:w-1/2 items-center justify-center p-6 sm:p-12 bg-background">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

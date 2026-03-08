@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Menu, X, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -43,12 +44,16 @@ const Navbar = () => {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Button variant="ghost" className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
-            Sign In
-          </Button>
-          <Button className="bg-gradient-accent text-primary-foreground hover:opacity-90 shadow-hero">
-            Get Started
-          </Button>
+          <Link to="/login">
+            <Button variant="ghost" className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
+              Sign In
+            </Button>
+          </Link>
+          <Link to="/register">
+            <Button className="bg-gradient-accent text-primary-foreground hover:opacity-90 shadow-hero">
+              Get Started
+            </Button>
+          </Link>
         </div>
 
         <button
@@ -76,9 +81,11 @@ const Navbar = () => {
                 {l.label}
               </a>
             ))}
-            <Button className="bg-gradient-accent text-primary-foreground mt-2">
-              Get Started
-            </Button>
+            <Link to="/register">
+              <Button className="bg-gradient-accent text-primary-foreground mt-2 w-full">
+                Get Started
+              </Button>
+            </Link>
           </div>
         </motion.div>
       )}

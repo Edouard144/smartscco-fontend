@@ -44,12 +44,16 @@ const Navbar = () => {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Button variant="ghost" className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
-            Sign In
-          </Button>
-          <Button className="bg-gradient-accent text-primary-foreground hover:opacity-90 shadow-hero">
-            Get Started
-          </Button>
+          <Link to="/login">
+            <Button variant="ghost" className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
+              Sign In
+            </Button>
+          </Link>
+          <Link to="/register">
+            <Button className="bg-gradient-accent text-primary-foreground hover:opacity-90 shadow-hero">
+              Get Started
+            </Button>
+          </Link>
         </div>
 
         <button

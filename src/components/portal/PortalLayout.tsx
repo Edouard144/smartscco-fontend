@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Wallet, CreditCard, Users, UserCircle, LogOut,
-  Menu, X, Shield, ChevronDown, Bell
+  Menu, X, Shield, ChevronDown, Bell, CalendarClock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 const memberLinks = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Wallet", href: "/wallet", icon: Wallet },
+  { label: "Bill Payments", href: "/bills", icon: CreditCard },
+  { label: "Scheduled", href: "/scheduled", icon: CalendarClock },
   { label: "Loans", href: "/loans", icon: CreditCard },
   { label: "Beneficiaries", href: "/beneficiaries", icon: Users },
   { label: "Profile", href: "/profile", icon: UserCircle },

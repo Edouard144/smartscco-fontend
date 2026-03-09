@@ -1,5 +1,20 @@
 // Complete mock data store for offline/demo functionality
 
+export type TransactionCategory = "savings" | "utilities" | "transfer" | "salary" | "rent" | "mobile_money" | "loan" | "airtime" | "food" | "other";
+
+export const TRANSACTION_CATEGORIES: Record<TransactionCategory, { label: string; color: string }> = {
+  savings: { label: "Savings", color: "hsl(162 63% 41%)" },
+  utilities: { label: "Utilities", color: "hsl(221 83% 33%)" },
+  transfer: { label: "Transfer", color: "hsl(43 96% 56%)" },
+  salary: { label: "Salary", color: "hsl(162 63% 41%)" },
+  rent: { label: "Rent", color: "hsl(0 84% 60%)" },
+  mobile_money: { label: "Mobile Money", color: "hsl(271 60% 50%)" },
+  loan: { label: "Loan", color: "hsl(221 70% 45%)" },
+  airtime: { label: "Airtime", color: "hsl(30 90% 50%)" },
+  food: { label: "Food & Dining", color: "hsl(340 70% 50%)" },
+  other: { label: "Other", color: "hsl(220 9% 46%)" },
+};
+
 export const MOCK_USERS = [
   {
     id: "user-001",
@@ -37,14 +52,14 @@ export const MOCK_USERS = [
 ];
 
 export const MOCK_TRANSACTIONS = [
-  { id: "tx-001", type: "deposit", amount: 500000, description: "Monthly savings deposit", status: "completed", user_email: "user@smartscco.com", created_at: "2025-03-01T10:00:00Z" },
-  { id: "tx-002", type: "credit", amount: 250000, description: "Transfer from Patrick", status: "completed", user_email: "demo@smartscco.com", created_at: "2025-02-28T15:30:00Z" },
-  { id: "tx-003", type: "debit", amount: 75000, description: "Utility payment - WASAC", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-25T09:45:00Z" },
-  { id: "tx-004", type: "deposit", amount: 1200000, description: "Business revenue deposit", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-20T11:00:00Z" },
-  { id: "tx-005", type: "debit", amount: 180000, description: "Rent payment", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-15T08:30:00Z" },
-  { id: "tx-006", type: "credit", amount: 350000, description: "Loan disbursement", status: "completed", user_email: "demo@smartscco.com", created_at: "2025-02-10T14:00:00Z" },
-  { id: "tx-007", type: "debit", amount: 45000, description: "Mobile money transfer", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-05T16:20:00Z" },
-  { id: "tx-008", type: "deposit", amount: 800000, description: "Salary deposit", status: "completed", user_email: "demo@smartscco.com", created_at: "2025-01-30T12:00:00Z" },
+  { id: "tx-001", type: "deposit", amount: 500000, description: "Monthly savings deposit", status: "completed", user_email: "user@smartscco.com", created_at: "2025-03-01T10:00:00Z", category: "savings" as TransactionCategory, reference: "REF-2025030110001" },
+  { id: "tx-002", type: "credit", amount: 250000, description: "Transfer from Patrick", status: "completed", user_email: "demo@smartscco.com", created_at: "2025-02-28T15:30:00Z", category: "transfer" as TransactionCategory, reference: "REF-2025022815302" },
+  { id: "tx-003", type: "debit", amount: 75000, description: "Utility payment - WASAC", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-25T09:45:00Z", category: "utilities" as TransactionCategory, reference: "REF-2025022509453" },
+  { id: "tx-004", type: "deposit", amount: 1200000, description: "Business revenue deposit", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-20T11:00:00Z", category: "salary" as TransactionCategory, reference: "REF-2025022011004" },
+  { id: "tx-005", type: "debit", amount: 180000, description: "Rent payment", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-15T08:30:00Z", category: "rent" as TransactionCategory, reference: "REF-2025021508305" },
+  { id: "tx-006", type: "credit", amount: 350000, description: "Loan disbursement", status: "completed", user_email: "demo@smartscco.com", created_at: "2025-02-10T14:00:00Z", category: "loan" as TransactionCategory, reference: "REF-2025021014006" },
+  { id: "tx-007", type: "debit", amount: 45000, description: "Mobile money transfer", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-05T16:20:00Z", category: "mobile_money" as TransactionCategory, reference: "REF-2025020516207" },
+  { id: "tx-008", type: "deposit", amount: 800000, description: "Salary deposit", status: "completed", user_email: "demo@smartscco.com", created_at: "2025-01-30T12:00:00Z", category: "salary" as TransactionCategory, reference: "REF-2025013012008" },
 ];
 
 export const MOCK_LOANS = [
@@ -97,6 +112,7 @@ class MockStore {
     this.transactions.unshift({
       id: `tx-${Date.now()}`, type: "deposit", amount, description: "Deposit via bank transfer",
       status: "completed", user_email: "user@smartscco.com", created_at: new Date().toISOString(),
+      category: "savings" as TransactionCategory, reference: `REF-${Date.now()}`,
     });
   }
 
@@ -106,6 +122,7 @@ class MockStore {
     this.transactions.unshift({
       id: `tx-${Date.now()}`, type: "debit", amount, description: "Withdrawal to bank",
       status: "completed", user_email: "user@smartscco.com", created_at: new Date().toISOString(),
+      category: "other" as TransactionCategory, reference: `REF-${Date.now()}`,
     });
   }
 
@@ -115,6 +132,7 @@ class MockStore {
     this.transactions.unshift({
       id: `tx-${Date.now()}`, type: "debit", amount, description: description || `Transfer to ${recipientEmail}`,
       status: "completed", user_email: recipientEmail, created_at: new Date().toISOString(),
+      category: "transfer" as TransactionCategory, reference: `REF-${Date.now()}`,
     });
   }
 
@@ -151,6 +169,7 @@ class MockStore {
     this.transactions.unshift({
       id: `tx-${Date.now()}`, type: "debit", amount, description: `Loan repayment (${loanId})`,
       status: "completed", user_email: "user@smartscco.com", created_at: new Date().toISOString(),
+      category: "loan" as TransactionCategory, reference: `REF-${Date.now()}`,
     });
   }
 

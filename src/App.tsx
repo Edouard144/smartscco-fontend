@@ -11,6 +11,8 @@ import Register from "./pages/Register";
 
 import Dashboard from "./pages/Dashboard";
 import WalletPage from "./pages/WalletPage";
+import BillPaymentsPage from "./pages/BillPaymentsPage";
+import ScheduledTransfersPage from "./pages/ScheduledTransfersPage";
 import LoansPage from "./pages/LoansPage";
 import BeneficiariesPage from "./pages/BeneficiariesPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -36,6 +38,8 @@ const App = () => (
             
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/wallet" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
+            <Route path="/bills" element={<ProtectedRoute><BillPaymentsPage /></ProtectedRoute>} />
+            <Route path="/scheduled" element={<ProtectedRoute><ScheduledTransfersPage /></ProtectedRoute>} />
             <Route path="/loans" element={<ProtectedRoute><LoansPage /></ProtectedRoute>} />
             <Route path="/beneficiaries" element={<ProtectedRoute><BeneficiariesPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

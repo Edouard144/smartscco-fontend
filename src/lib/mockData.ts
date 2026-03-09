@@ -132,6 +132,7 @@ class MockStore {
     this.transactions.unshift({
       id: `tx-${Date.now()}`, type: "debit", amount, description: description || `Transfer to ${recipientEmail}`,
       status: "completed", user_email: recipientEmail, created_at: new Date().toISOString(),
+      category: "transfer" as TransactionCategory, reference: `REF-${Date.now()}`,
     });
   }
 

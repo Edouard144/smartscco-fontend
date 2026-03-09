@@ -1,5 +1,20 @@
 // Complete mock data store for offline/demo functionality
 
+export type TransactionCategory = "savings" | "utilities" | "transfer" | "salary" | "rent" | "mobile_money" | "loan" | "airtime" | "food" | "other";
+
+export const TRANSACTION_CATEGORIES: Record<TransactionCategory, { label: string; color: string }> = {
+  savings: { label: "Savings", color: "hsl(162 63% 41%)" },
+  utilities: { label: "Utilities", color: "hsl(221 83% 33%)" },
+  transfer: { label: "Transfer", color: "hsl(43 96% 56%)" },
+  salary: { label: "Salary", color: "hsl(162 63% 41%)" },
+  rent: { label: "Rent", color: "hsl(0 84% 60%)" },
+  mobile_money: { label: "Mobile Money", color: "hsl(271 60% 50%)" },
+  loan: { label: "Loan", color: "hsl(221 70% 45%)" },
+  airtime: { label: "Airtime", color: "hsl(30 90% 50%)" },
+  food: { label: "Food & Dining", color: "hsl(340 70% 50%)" },
+  other: { label: "Other", color: "hsl(220 9% 46%)" },
+};
+
 export const MOCK_USERS = [
   {
     id: "user-001",

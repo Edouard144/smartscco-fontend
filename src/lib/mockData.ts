@@ -112,6 +112,7 @@ class MockStore {
     this.transactions.unshift({
       id: `tx-${Date.now()}`, type: "deposit", amount, description: "Deposit via bank transfer",
       status: "completed", user_email: "user@smartscco.com", created_at: new Date().toISOString(),
+      category: "savings" as TransactionCategory, reference: `REF-${Date.now()}`,
     });
   }
 

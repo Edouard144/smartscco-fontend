@@ -11,6 +11,8 @@ import Register from "./pages/Register";
 
 import Dashboard from "./pages/Dashboard";
 import WalletPage from "./pages/WalletPage";
+import BillPaymentsPage from "./pages/BillPaymentsPage";
+import ScheduledTransfersPage from "./pages/ScheduledTransfersPage";
 import LoansPage from "./pages/LoansPage";
 import BeneficiariesPage from "./pages/BeneficiariesPage";
 import ProfilePage from "./pages/ProfilePage";

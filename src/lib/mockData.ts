@@ -169,6 +169,7 @@ class MockStore {
     this.transactions.unshift({
       id: `tx-${Date.now()}`, type: "debit", amount, description: `Loan repayment (${loanId})`,
       status: "completed", user_email: "user@smartscco.com", created_at: new Date().toISOString(),
+      category: "loan" as TransactionCategory, reference: `REF-${Date.now()}`,
     });
   }
 

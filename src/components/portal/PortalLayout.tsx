@@ -12,6 +12,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 const memberLinks = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Wallet", href: "/wallet", icon: Wallet },
+  { label: "Bill Payments", href: "/bills", icon: CreditCard },
+  { label: "Scheduled", href: "/scheduled", icon: CalendarClock },
   { label: "Loans", href: "/loans", icon: CreditCard },
   { label: "Beneficiaries", href: "/beneficiaries", icon: Users },
   { label: "Profile", href: "/profile", icon: UserCircle },

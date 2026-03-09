@@ -1,27 +1,35 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Wallet, ArrowUpRight, ArrowDownLeft, Search, Loader2 } from "lucide-react";
+import { Wallet, ArrowUpRight, ArrowDownLeft, Search, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PortalLayout from "@/components/portal/PortalLayout";
-import { mockStore } from "@/lib/mockData";
+import TransactionDetailsDialog from "@/components/portal/TransactionDetailsDialog";
+import { mockStore, TRANSACTION_CATEGORIES, type TransactionCategory } from "@/lib/mockData";
 import { toast } from "sonner";
 
 const WalletPage = () => {
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [, forceUpdate] = useState(0);
   const refresh = () => forceUpdate(n => n + 1);
 
   const balance = mockStore.getBalance();
-  const transactions = mockStore.getTransactions(search);
+  let transactions = mockStore.getTransactions(search);
+  if (categoryFilter !== "all") {
+    transactions = transactions.filter((t: any) => t.category === categoryFilter);
+  }
 
   const [transferForm, setTransferForm] = useState({ recipient_email: "", amount: "", description: "" });
   const [depositAmount, setDepositAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [openDialog, setOpenDialog] = useState<string | null>(null);
+  const [selectedTx, setSelectedTx] = useState<any>(null);
 
   const handleTransfer = () => {
     try {
@@ -119,11 +127,30 @@ const WalletPage = () => {
         </motion.div>
 
         <Card className="shadow-card">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <CardTitle className="font-display text-lg">Transaction History</CardTitle>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search transactions..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:w-48">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+              </div>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-36">
+                  <Filter className="h-3.5 w-3.5 mr-1.5" />
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {Object.entries(TRANSACTION_CATEGORIES).map(([key, cat]) => (
+                    <SelectItem key={key} value={key}>
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: cat.color }} />
+                        {cat.label}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </CardHeader>
           <CardContent>
@@ -131,28 +158,46 @@ const WalletPage = () => {
               <p className="text-center text-muted-foreground py-8">No transactions found</p>
             ) : (
               <div className="space-y-2">
-                {transactions.map((tx, i) => (
-                  <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3 hover:shadow-card transition-shadow">
-                    <div className="flex items-center gap-3">
-                      <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                        tx.type === "credit" || tx.type === "deposit" ? "bg-accent/10 text-accent" : "bg-destructive/10 text-destructive"
-                      }`}>
-                        {tx.type === "credit" || tx.type === "deposit" ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
+                {transactions.map((tx: any, i: number) => {
+                  const isCredit = tx.type === "credit" || tx.type === "deposit";
+                  const cat = TRANSACTION_CATEGORIES[tx.category as TransactionCategory] || TRANSACTION_CATEGORIES.other;
+                  return (
+                    <div
+                      key={i}
+                      onClick={() => setSelectedTx(tx)}
+                      className="flex items-center justify-between rounded-lg border border-border p-3 hover:shadow-card transition-shadow cursor-pointer hover:bg-muted/30"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${isCredit ? "bg-accent/10 text-accent" : "bg-destructive/10 text-destructive"}`}>
+                          {isCredit ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{tx.description || tx.type}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-border">
+                              <span className="h-1.5 w-1.5 rounded-full mr-1" style={{ backgroundColor: cat.color }} />
+                              {cat.label}
+                            </Badge>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{tx.description || tx.type}</p>
-                        <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
-                      </div>
+                      <span className={`text-sm font-semibold ${isCredit ? "text-accent" : "text-destructive"}`}>
+                        {isCredit ? "+" : "-"}{Number(tx.amount).toLocaleString()} RWF
+                      </span>
                     </div>
-                    <span className={`text-sm font-semibold ${tx.type === "credit" || tx.type === "deposit" ? "text-accent" : "text-destructive"}`}>
-                      {tx.type === "credit" || tx.type === "deposit" ? "+" : "-"}{Number(tx.amount).toLocaleString()} RWF
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
         </Card>
+
+        <TransactionDetailsDialog
+          transaction={selectedTx}
+          open={!!selectedTx}
+          onOpenChange={(o) => !o && setSelectedTx(null)}
+        />
       </div>
     </PortalLayout>
   );

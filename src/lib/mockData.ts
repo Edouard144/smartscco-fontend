@@ -52,14 +52,14 @@ export const MOCK_USERS = [
 ];
 
 export const MOCK_TRANSACTIONS = [
-  { id: "tx-001", type: "deposit", amount: 500000, description: "Monthly savings deposit", status: "completed", user_email: "user@smartscco.com", created_at: "2025-03-01T10:00:00Z" },
-  { id: "tx-002", type: "credit", amount: 250000, description: "Transfer from Patrick", status: "completed", user_email: "demo@smartscco.com", created_at: "2025-02-28T15:30:00Z" },
-  { id: "tx-003", type: "debit", amount: 75000, description: "Utility payment - WASAC", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-25T09:45:00Z" },
-  { id: "tx-004", type: "deposit", amount: 1200000, description: "Business revenue deposit", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-20T11:00:00Z" },
-  { id: "tx-005", type: "debit", amount: 180000, description: "Rent payment", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-15T08:30:00Z" },
-  { id: "tx-006", type: "credit", amount: 350000, description: "Loan disbursement", status: "completed", user_email: "demo@smartscco.com", created_at: "2025-02-10T14:00:00Z" },
-  { id: "tx-007", type: "debit", amount: 45000, description: "Mobile money transfer", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-05T16:20:00Z" },
-  { id: "tx-008", type: "deposit", amount: 800000, description: "Salary deposit", status: "completed", user_email: "demo@smartscco.com", created_at: "2025-01-30T12:00:00Z" },
+  { id: "tx-001", type: "deposit", amount: 500000, description: "Monthly savings deposit", status: "completed", user_email: "user@smartscco.com", created_at: "2025-03-01T10:00:00Z", category: "savings" as TransactionCategory, reference: "REF-2025030110001" },
+  { id: "tx-002", type: "credit", amount: 250000, description: "Transfer from Patrick", status: "completed", user_email: "demo@smartscco.com", created_at: "2025-02-28T15:30:00Z", category: "transfer" as TransactionCategory, reference: "REF-2025022815302" },
+  { id: "tx-003", type: "debit", amount: 75000, description: "Utility payment - WASAC", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-25T09:45:00Z", category: "utilities" as TransactionCategory, reference: "REF-2025022509453" },
+  { id: "tx-004", type: "deposit", amount: 1200000, description: "Business revenue deposit", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-20T11:00:00Z", category: "salary" as TransactionCategory, reference: "REF-2025022011004" },
+  { id: "tx-005", type: "debit", amount: 180000, description: "Rent payment", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-15T08:30:00Z", category: "rent" as TransactionCategory, reference: "REF-2025021508305" },
+  { id: "tx-006", type: "credit", amount: 350000, description: "Loan disbursement", status: "completed", user_email: "demo@smartscco.com", created_at: "2025-02-10T14:00:00Z", category: "loan" as TransactionCategory, reference: "REF-2025021014006" },
+  { id: "tx-007", type: "debit", amount: 45000, description: "Mobile money transfer", status: "completed", user_email: "user@smartscco.com", created_at: "2025-02-05T16:20:00Z", category: "mobile_money" as TransactionCategory, reference: "REF-2025020516207" },
+  { id: "tx-008", type: "deposit", amount: 800000, description: "Salary deposit", status: "completed", user_email: "demo@smartscco.com", created_at: "2025-01-30T12:00:00Z", category: "salary" as TransactionCategory, reference: "REF-2025013012008" },
 ];
 
 export const MOCK_LOANS = [

@@ -24,9 +24,14 @@ const Login = () => {
     }
     setLoading(true);
     try {
-      await login(email, password);
-      toast.success("Login successful!");
-      navigate("/dashboard");
+      const result = await login(email, password);
+      toast.success(result.message || "Login successful!");
+      // If OTP was sent, redirect to verify page; otherwise go to dashboard
+      if (result.message?.includes("OTP")) {
+        navigate("/verify-otp");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error: any) {
       toast.error(error.message || "Invalid credentials");
     } finally {
@@ -59,7 +64,7 @@ const Login = () => {
             Access your secure banking portal with industry-leading security.
           </p>
           <div className="mt-8 space-y-3">
-            {["Bank-grade encryption", "Secure authentication", "24/7 access"].map((f) => (
+            {["Bank-grade encryption", "OTP verification", "24/7 access"].map((f) => (
               <div key={f} className="flex items-center gap-3 text-primary-foreground/70">
                 <div className="h-2 w-2 rounded-full bg-emerald" />
                 <span className="text-sm">{f}</span>

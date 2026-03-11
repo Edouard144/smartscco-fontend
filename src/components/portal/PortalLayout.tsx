@@ -3,7 +3,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Wallet, CreditCard, Users, UserCircle, LogOut,
-  Menu, X, Shield, ChevronDown, Bell, CalendarClock
+  Menu, X, Shield, ChevronDown, Bell, CalendarClock, Lock, TrendingUp,
+  FileCheck, Target, BarChart3, Settings, HelpCircle, Building2,
+  AlertTriangle, FileText, Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -15,8 +17,16 @@ const memberLinks = [
   { label: "Bill Payments", href: "/bills", icon: CreditCard },
   { label: "Scheduled", href: "/scheduled", icon: CalendarClock },
   { label: "Loans", href: "/loans", icon: CreditCard },
+  { label: "Savings Goals", href: "/savings", icon: Target },
   { label: "Beneficiaries", href: "/beneficiaries", icon: Users },
+  { label: "Analytics", href: "/analytics", icon: BarChart3 },
+  { label: "Credit Score", href: "/credit", icon: TrendingUp },
+  { label: "KYC Verification", href: "/kyc", icon: FileCheck },
+  { label: "Notifications", href: "/notifications", icon: Bell },
+  { label: "Security", href: "/security", icon: Lock },
   { label: "Profile", href: "/profile", icon: UserCircle },
+  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Help & Support", href: "/help", icon: HelpCircle },
 ];
 
 const adminLinks = [
@@ -24,6 +34,10 @@ const adminLinks = [
   { label: "Members", href: "/admin/members", icon: Users },
   { label: "Transactions", href: "/admin/transactions", icon: Wallet },
   { label: "Loans", href: "/admin/loans", icon: CreditCard },
+  { label: "Audit Logs", href: "/admin/audit", icon: FileText },
+  { label: "Fraud Alerts", href: "/admin/fraud", icon: AlertTriangle },
+  { label: "Branches", href: "/admin/branches", icon: Building2 },
+  { label: "Export Reports", href: "/admin/export", icon: Download },
 ];
 
 const PortalLayout = ({ children }: { children: React.ReactNode }) => {
@@ -69,7 +83,7 @@ const PortalLayout = ({ children }: { children: React.ReactNode }) => {
                   to={link.href}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     active
                       ? "bg-primary-foreground/15 text-primary-foreground"
                       : "text-primary-foreground/60 hover:bg-primary-foreground/10 hover:text-primary-foreground"
@@ -114,7 +128,7 @@ const PortalLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex-1" />
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative" onClick={() => navigate("/notifications")}>
               <Bell className="h-4 w-4" />
             </Button>
             <div className="flex items-center gap-2">

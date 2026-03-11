@@ -68,8 +68,8 @@ const KYCPage = () => {
               )}
 
               {status === "pending" && (
-                <div className="rounded-xl bg-yellow-500/5 border border-yellow-500/20 p-6 text-center">
-                  <Clock className="h-12 w-12 text-yellow-600 mx-auto mb-3" />
+                <div className="rounded-xl bg-primary/5 border border-primary/20 p-6 text-center">
+                  <Clock className="h-12 w-12 text-primary mx-auto mb-3" />
                   <h3 className="font-display text-lg font-semibold text-foreground">Under Review</h3>
                   <p className="text-sm text-muted-foreground mt-1">Your documents are being reviewed. This usually takes 1-2 business days.</p>
                 </div>

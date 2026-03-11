@@ -11,7 +11,7 @@ type KYCStatus = "not_submitted" | "pending" | "verified" | "rejected";
 
 const statusConfig: Record<KYCStatus, { label: string; icon: any; color: string }> = {
   not_submitted: { label: "Not Submitted", icon: Upload, color: "bg-muted text-muted-foreground" },
-  pending: { label: "Pending Review", icon: Clock, color: "bg-yellow-500/10 text-yellow-600" },
+  pending: { label: "Pending Review", icon: Clock, color: "bg-primary/10 text-primary" },
   verified: { label: "Verified", icon: CheckCircle, color: "bg-accent/10 text-accent" },
   rejected: { label: "Rejected", icon: XCircle, color: "bg-destructive/10 text-destructive" },
 };

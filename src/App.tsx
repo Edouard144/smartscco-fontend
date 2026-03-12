@@ -35,6 +35,7 @@ import AdminFraudPage from "./pages/AdminFraudPage";
 import AdminBranchesPage from "./pages/AdminBranchesPage";
 import AdminExportPage from "./pages/AdminExportPage";
 import NotFound from "./pages/NotFound";
+import ChatbotWidget from "./components/ChatbotWidget";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,7 @@ const App = () => (
             <Route path="/admin/export" element={<ProtectedRoute adminOnly><AdminExportPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <ChatbotWidget />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

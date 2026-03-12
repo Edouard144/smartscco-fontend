@@ -78,6 +78,7 @@ const App = () => (
             <Route path="/admin/export" element={<ProtectedRoute adminOnly><AdminExportPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <ChatbotWidget />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

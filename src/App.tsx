@@ -35,6 +35,7 @@ import AdminFraudPage from "./pages/AdminFraudPage";
 import AdminBranchesPage from "./pages/AdminBranchesPage";
 import AdminExportPage from "./pages/AdminExportPage";
 import NotFound from "./pages/NotFound";
+import ChatbotWidget from "./components/ChatbotWidget";
 
 const queryClient = new QueryClient();
 

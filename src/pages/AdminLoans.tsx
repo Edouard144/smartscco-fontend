@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import PortalLayout from "@/components/portal/PortalLayout";
-import { mockStore } from "@/lib/mockData";
+import api from "@/lib/api";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 const AdminLoans = () => {
@@ -19,8 +20,23 @@ const AdminLoans = () => {
   const [approveForm, setApproveForm] = useState({ approved_amount: "", interest_rate: "15", term_months: "12" });
   const [rejectReason, setRejectReason] = useState("");
 
-  const loans = mockStore.getPendingLoans();
-  const allLoans = mockStore.getLoans();
+  const [allLoans, setAllLoans] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchPendingLoans = async () => {
+    try {
+      const res = await api.get("/loans/pending");
+      setAllLoans(res.data.loans || res.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingLoans();
+  }, [forceUpdate]);
 
   const statusColor: Record<string, string> = {
     pending: "bg-gold/10 text-gold",
@@ -30,18 +46,30 @@ const AdminLoans = () => {
     paid: "bg-primary/10 text-primary",
   };
 
-  const handleApprove = () => {
-    mockStore.approveLoan(actionLoan.id, Number(approveForm.approved_amount), Number(approveForm.interest_rate), Number(approveForm.term_months));
-    toast.success("Loan approved!");
-    setActionType(null);
-    refresh();
+  const handleApprove = async () => {
+    try {
+      await api.put(`/loans/approve/${actionLoan.id}`, { 
+        approved_amount: Number(approveForm.approved_amount), 
+        interest_rate: Number(approveForm.interest_rate), 
+        term_months: Number(approveForm.term_months) 
+      });
+      toast.success("Loan approved!");
+      setActionType(null);
+      refresh();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || err.message);
+    }
   };
 
-  const handleReject = () => {
-    mockStore.rejectLoan(actionLoan.id);
-    toast.success("Loan rejected");
-    setActionType(null);
-    refresh();
+  const handleReject = async () => {
+    try {
+      await api.put(`/loans/reject/${actionLoan.id}`, { reason: rejectReason });
+      toast.success("Loan rejected");
+      setActionType(null);
+      refresh();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || err.message);
+    }
   };
 
   return (
@@ -70,7 +98,7 @@ const AdminLoans = () => {
                   <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No loans</TableCell></TableRow>
                 ) : allLoans.map((loan, i) => (
                   <TableRow key={loan.id || i}>
-                    <TableCell className="font-medium">{loan.user_name || loan.email || "—"}</TableCell>
+                    <TableCell className="font-medium">{loan.user_name || loan.full_name || loan.email || "—"}</TableCell>
                     <TableCell>{Number(loan.amount).toLocaleString()} RWF</TableCell>
                     <TableCell>{loan.purpose || "—"}</TableCell>
                     <TableCell>{loan.term_months}mo</TableCell>

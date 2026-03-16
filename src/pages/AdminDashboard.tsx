@@ -7,7 +7,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from "recharts";
 import PortalLayout from "@/components/portal/PortalLayout";
-import { mockStore, MOCK_MEMBERS } from "@/lib/mockData";
+import api from "@/lib/api";
+import { useEffect } from "react";
 
 const monthlyData = [
   { month: "Jan", deposits: 2400000, withdrawals: 1200000, loans: 800000 },
@@ -35,13 +36,40 @@ const CHART_COLORS = ["hsl(221, 83%, 33%)", "hsl(162, 63%, 41%)", "hsl(43, 96%, 
 const formatCurrency = (v: number) => `${(v / 1000000).toFixed(1)}M`;
 
 const AdminDashboard = () => {
-  const recentTx = mockStore.getTransactions().slice(0, 5);
+  const [stats, setStats] = useState({
+    total_members: 0,
+    total_deposits: 0,
+    total_loans_disbursed: 0,
+    open_fraud_alerts: 0
+  });
+  const [recentTx, setRecentTx] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      try {
+        const [statsRes, txRes] = await Promise.all([
+          api.get("/admin/dashboard"),
+          api.get("/admin/transactions")
+        ]);
+        setStats(statsRes.data.stats || {
+          total_members: 0, total_deposits: 0, total_loans_disbursed: 0, open_fraud_alerts: 0
+        });
+        setRecentTx((txRes.data.transactions || []).slice(0, 5));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAdminData();
+  }, []);
 
   const statCards = [
-    { label: "Total Members", value: MOCK_MEMBERS.length, icon: Users, color: "bg-primary/10 text-primary", trend: "+12%" },
-    { label: "Total Deposits", value: `${(29500000).toLocaleString()} RWF`, icon: Wallet, color: "bg-accent/10 text-accent", trend: "+23%" },
-    { label: "Active Loans", value: mockStore.getLoans().filter(l => l.status === "active").length, icon: CreditCard, color: "bg-gold/10 text-gold", trend: "+8%" },
-    { label: "Transactions", value: mockStore.getTransactions().length, icon: Activity, color: "bg-navy-light/10 text-navy-light", trend: "+15%" },
+    { label: "Total Members", value: stats.total_members, icon: Users, color: "bg-primary/10 text-primary", trend: "" },
+    { label: "Total Deposits", value: `${Number(stats.total_deposits).toLocaleString()} RWF`, icon: Wallet, color: "bg-accent/10 text-accent", trend: "" },
+    { label: "Loans Disbursed", value: `${Number(stats.total_loans_disbursed).toLocaleString()} RWF`, icon: CreditCard, color: "bg-gold/10 text-gold", trend: "" },
+    { label: "Fraud Alerts", value: stats.open_fraud_alerts, icon: Activity, color: "bg-navy-light/10 text-navy-light", trend: "" },
   ];
 
   return (

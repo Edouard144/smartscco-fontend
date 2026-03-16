@@ -1,21 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import PortalLayout from "@/components/portal/PortalLayout";
-import { MOCK_MEMBERS } from "@/lib/mockData";
+import api from "@/lib/api";
 
 const AdminMembers = () => {
   const [search, setSearch] = useState("");
+  const [members, setMembers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const res = await api.get('/admin/members'); // Adjust endpoint if needed
+        setMembers(res.data.members || res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch members", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMembers();
+  }, []);
 
   const filtered = search
-    ? MOCK_MEMBERS.filter(m =>
-        m.full_name.toLowerCase().includes(search.toLowerCase()) ||
-        m.email.toLowerCase().includes(search.toLowerCase())
+    ? members.filter(m =>
+        m.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+        m.email?.toLowerCase().includes(search.toLowerCase())
       )
-    : MOCK_MEMBERS;
+    : members;
 
   return (
     <PortalLayout>
@@ -44,7 +60,9 @@ const AdminMembers = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.length === 0 ? (
+                {loading ? (
+                  <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Loading members...</TableCell></TableRow>
+                ) : filtered.length === 0 ? (
                   <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No members found</TableCell></TableRow>
                 ) : filtered.map((m, i) => (
                   <TableRow key={m.id || i}>

@@ -30,9 +30,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("mockUser");
+    const stored = localStorage.getItem("user");
     if (stored) {
-      try { setUser(JSON.parse(stored)); } catch { localStorage.removeItem("mockUser"); }
+      try { setUser(JSON.parse(stored)); } catch { localStorage.removeItem("user"); }
     }
     setLoading(false);
   }, []);
@@ -43,13 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setPendingEmail(email);
       return { success: true, message: "OTP sent! Check your email." };
     } catch (err: any) {
-      // Fallback to mock for demo
-      const found = mockStore.findUser(email, password);
-      if (!found) throw new Error(err.response?.data?.message || "Invalid email or password");
-      const u: User = { id: found.id, email: found.email, full_name: found.full_name, role: found.role, phone: found.phone, national_id: found.national_id };
-      setUser(u);
-      localStorage.setItem("mockUser", JSON.stringify(u));
-      return { success: true, message: "Login successful!" };
+      throw new Error(err.response?.data?.error || err.response?.data?.message || "Invalid email or password");
     }
   };
 
@@ -64,11 +58,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role: userData.role || "member", phone: userData.phone, national_id: userData.national_id
       };
       setUser(u);
-      localStorage.setItem("mockUser", JSON.stringify(u));
+      localStorage.setItem("user", JSON.stringify(u));
       setPendingEmail(null);
       return { success: true };
     } catch (err: any) {
-      throw new Error(err.response?.data?.message || "Invalid OTP");
+      throw new Error(err.response?.data?.error || err.response?.data?.message || "Invalid OTP");
     }
   };
 
@@ -76,15 +70,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await api.post("/auth/register", data);
       return { success: true };
-    } catch {
-      mockStore.registerUser(data);
-      return { success: true };
+    } catch (err: any) {
+      throw new Error(err.response?.data?.error || err.response?.data?.message || "Registration failed");
     }
   };
 
   const logout = () => {
     api.post("/auth/logout").catch(() => {});
-    localStorage.removeItem("mockUser");
+    localStorage.removeItem("user");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     setUser(null);

@@ -133,7 +133,7 @@ const PortalLayout = ({ children }: { children: React.ReactNode }) => {
             </Button>
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-gradient-accent flex items-center justify-center text-primary-foreground text-sm font-bold">
-                {user?.full_name?.charAt(0) || "U"}
+                {user?.full_name ? user.full_name.charAt(0) : "U"}
               </div>
               <span className="hidden text-sm font-medium text-foreground sm:block">
                 {user?.full_name || "User"}

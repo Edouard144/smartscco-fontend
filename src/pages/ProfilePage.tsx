@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Smartphone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,11 +7,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import PortalLayout from "@/components/portal/PortalLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { MOCK_DEVICES } from "@/lib/mockData";
+import api from "@/lib/api";
 import { toast } from "sonner";
 
 const ProfilePage = () => {
   const { user } = useAuth();
+  const [devices, setDevices] = useState<any[]>([]);
+  const [loadingDevices, setLoadingDevices] = useState(true);
+
+  useEffect(() => {
+    const fetchDevices = async () => {
+      try {
+        const res = await api.get('/devices/my-devices');
+        setDevices(res.data.devices || []);
+      } catch (error) {
+        console.error("Failed to fetch devices", error);
+      } finally {
+        setLoadingDevices(false);
+      }
+    };
+    fetchDevices();
+  }, []);
+
   const [form, setForm] = useState({
     full_name: user?.full_name || "",
     phone: user?.phone || "",
@@ -52,15 +69,21 @@ const ProfilePage = () => {
         <Card className="shadow-card">
           <CardHeader><CardTitle className="font-display text-lg">Your Devices</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            {MOCK_DEVICES.map((d, i) => (
-              <div key={i} className="flex items-center gap-3 rounded-lg border border-border p-3">
-                <Smartphone className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">{d.device_name}</p>
-                  <p className="text-xs text-muted-foreground">{new Date(d.last_login).toLocaleDateString()}</p>
-                </div>
-              </div>
-            ))}
+             {loadingDevices ? (
+                 <p className="text-sm text-muted-foreground">Loading devices...</p>
+             ) : devices.length === 0 ? (
+                 <p className="text-sm text-muted-foreground">No devices found.</p>
+             ) : (
+                devices.map((d, i) => (
+                  <div key={i} className="flex items-center gap-3 rounded-lg border border-border p-3">
+                    <Smartphone className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{d.device_name || d.device_type}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(d.last_login).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                ))
+             )}
           </CardContent>
         </Card>
       </div>

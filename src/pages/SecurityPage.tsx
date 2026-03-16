@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Shield, Smartphone, Lock, Key, Eye, EyeOff, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,18 +8,26 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PortalLayout from "@/components/portal/PortalLayout";
-import { MOCK_DEVICES } from "@/lib/mockData";
+import api from "@/lib/api";
 import { toast } from "sonner";
 
 const SecurityPage = () => {
-  const [devices] = useState(MOCK_DEVICES);
-  const [pinDialog, setPinDialog] = useState(false);
-  const [passwordDialog, setPasswordDialog] = useState(false);
-  const [pin, setPin] = useState("");
-  const [confirmPin, setConfirmPin] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [showPw, setShowPw] = useState(false);
+  const [devices, setDevices] = useState<any[]>([]);
+  const [loadingDevices, setLoadingDevices] = useState(true);
+
+  useEffect(() => {
+    const fetchDevices = async () => {
+      try {
+        const res = await api.get('/devices/my-devices');
+        setDevices(res.data.devices || []);
+      } catch (error) {
+        console.error("Failed to fetch devices", error);
+      } finally {
+        setLoadingDevices(false);
+      }
+    };
+    fetchDevices();
+  }, []);
 
   const handleSetPin = () => {
     if (pin.length < 4) { toast.error("PIN must be at least 4 digits"); return; }
@@ -141,27 +149,33 @@ const SecurityPage = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {devices.map((d, i) => (
-                  <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3">
-                    <div className="flex items-center gap-3">
-                      <Smartphone className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{d.device_name}</p>
-                        <p className="text-xs text-muted-foreground">Last active: {new Date(d.last_login).toLocaleString()}</p>
+              {loadingDevices ? (
+                 <p className="text-sm text-muted-foreground">Loading devices...</p>
+              ) : devices.length === 0 ? (
+                 <p className="text-sm text-muted-foreground">No devices found.</p>
+              ) : (
+                <div className="space-y-3">
+                  {devices.map((d, i) => (
+                    <div key={i} className="flex items-center justify-between rounded-lg border border-border p-3">
+                      <div className="flex items-center gap-3">
+                        <Smartphone className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{d.device_name || d.device_type}</p>
+                          <p className="text-xs text-muted-foreground">Last active: {new Date(d.last_login).toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {i === 0 && <Badge variant="outline" className="text-accent border-accent/30">Current</Badge>}
+                        {i !== 0 && (
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/60 hover:text-destructive" onClick={() => toast.success("Device removed")}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {i === 0 && <Badge variant="outline" className="text-accent border-accent/30">Current</Badge>}
-                      {i !== 0 && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/60 hover:text-destructive" onClick={() => toast.success("Device removed")}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

@@ -9,8 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PortalLayout from "@/components/portal/PortalLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { mockStore } from "@/lib/mockData";
+import api from "@/lib/api";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 const statusColor: Record<string, string> = {
   active: "bg-accent/10 text-accent border-accent/20",
@@ -29,25 +30,45 @@ const LoansPage = () => {
   const [form, setForm] = useState({ amount: "", purpose: "", term_months: "12" });
   const [repayAmount, setRepayAmount] = useState("");
 
-  const loans = mockStore.getLoans(user?.id);
+  const [loans, setLoans] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleApply = () => {
-    mockStore.applyLoan(user?.id || "", Number(form.amount), form.purpose, Number(form.term_months));
-    toast.success("Loan application submitted!");
-    setApplyOpen(false);
-    setForm({ amount: "", purpose: "", term_months: "12" });
-    refresh();
+  const fetchLoans = async () => {
+    try {
+      const res = await api.get("/loans/my-loans");
+      setLoans(res.data.loans || res.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleRepay = (loanId: string) => {
+  useEffect(() => {
+    if (user) fetchLoans();
+  }, [user, forceUpdate]);
+
+  const handleApply = async () => {
     try {
-      mockStore.repayLoan(loanId, Number(repayAmount));
+      await api.post("/loans/apply", { amount: Number(form.amount), duration_months: Number(form.term_months) });
+      toast.success("Loan application submitted!");
+      setApplyOpen(false);
+      setForm({ amount: "", purpose: "", term_months: "12" });
+      refresh();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || err.message);
+    }
+  };
+
+  const handleRepay = async (loanId: string) => {
+    try {
+      await api.post(`/loans/repay/${loanId}`, { amount: Number(repayAmount) });
       toast.success("Repayment successful!");
       setRepayOpen(null);
       setRepayAmount("");
       refresh();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.response?.data?.error || err.message);
     }
   };
 

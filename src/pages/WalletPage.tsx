@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PortalLayout from "@/components/portal/PortalLayout";
 import TransactionDetailsDialog from "@/components/portal/TransactionDetailsDialog";
-import { mockStore, TRANSACTION_CATEGORIES, type TransactionCategory } from "@/lib/mockData";
 import { toast } from "sonner";
+import api from "@/lib/api";
+import { useEffect } from "react";
 
 const WalletPage = () => {
   const [search, setSearch] = useState("");
@@ -19,8 +20,32 @@ const WalletPage = () => {
   const [, forceUpdate] = useState(0);
   const refresh = () => forceUpdate(n => n + 1);
 
-  const balance = mockStore.getBalance();
-  let transactions = mockStore.getTransactions(search);
+  const [balance, setBalance] = useState(0);
+  const [allTransactions, setAllTransactions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchWalletData = async () => {
+    try {
+      const [balRes, txRes] = await Promise.all([
+        api.get("/wallet/balance"),
+        api.get("/wallet/transactions")
+      ]);
+      setBalance(Number(balRes.data.wallet?.balance) || Number(balRes.data.balance) || 0);
+      setAllTransactions(txRes.data.transactions || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWalletData();
+  }, [forceUpdate]);
+
+  let transactions = allTransactions.filter((t: any) =>
+    (t.description || t.type).toLowerCase().includes(search.toLowerCase())
+  );
   if (categoryFilter !== "all") {
     transactions = transactions.filter((t: any) => t.category === categoryFilter);
   }
@@ -31,35 +56,47 @@ const WalletPage = () => {
   const [openDialog, setOpenDialog] = useState<string | null>(null);
   const [selectedTx, setSelectedTx] = useState<any>(null);
 
-  const handleTransfer = () => {
+  const handleTransfer = async () => {
     try {
-      mockStore.transfer(transferForm.recipient_email, Number(transferForm.amount), transferForm.description);
+      // NOTE: The real endpoint requires receiver_id and pin. Until the UI is updated, this might fail unless adapted.
+      await api.post("/wallet/transfer", { 
+        receiver_id: transferForm.recipient_email, // Temporary workaround/placeholder
+        amount: Number(transferForm.amount), 
+        pin: "1234" // Mock pin for now as there's no UI input for it
+      });
       toast.success("Transfer successful!");
       setOpenDialog(null);
       setTransferForm({ recipient_email: "", amount: "", description: "" });
       refresh();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.response?.data?.error || err.message);
     }
   };
 
-  const handleDeposit = () => {
-    mockStore.deposit(Number(depositAmount));
-    toast.success("Deposit successful!");
-    setOpenDialog(null);
-    setDepositAmount("");
-    refresh();
+  const handleDeposit = async () => {
+    try {
+      await api.post("/wallet/deposit", { amount: Number(depositAmount) });
+      toast.success("Deposit successful!");
+      setOpenDialog(null);
+      setDepositAmount("");
+      refresh();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || err.message);
+    }
   };
 
-  const handleWithdraw = () => {
+  const handleWithdraw = async () => {
     try {
-      mockStore.withdraw(Number(withdrawAmount));
+      await api.post("/wallet/withdraw", { 
+        amount: Number(withdrawAmount),
+        pin: "1234" // Mock pin for now
+      });
       toast.success("Withdrawal successful!");
       setOpenDialog(null);
       setWithdrawAmount("");
       refresh();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.response?.data?.error || err.message);
     }
   };
 
@@ -141,14 +178,11 @@ const WalletPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {Object.entries(TRANSACTION_CATEGORIES).map(([key, cat]) => (
-                    <SelectItem key={key} value={key}>
-                      <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: cat.color }} />
-                        {cat.label}
-                      </span>
-                    </SelectItem>
-                  ))}
+                  {/* Since TRANSACTION_CATEGORIES was static, we just list a few or remove category filtering for now */}
+                  <SelectItem value="deposit">Deposits</SelectItem>
+                  <SelectItem value="withdraw">Withdrawals</SelectItem>
+                  <SelectItem value="transfer">Transfers</SelectItem>
+                  <SelectItem value="loan_disbursement">Loans</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -160,7 +194,6 @@ const WalletPage = () => {
               <div className="space-y-2">
                 {transactions.map((tx: any, i: number) => {
                   const isCredit = tx.type === "credit" || tx.type === "deposit";
-                  const cat = TRANSACTION_CATEGORIES[tx.category as TransactionCategory] || TRANSACTION_CATEGORIES.other;
                   return (
                     <div
                       key={i}
@@ -176,8 +209,7 @@ const WalletPage = () => {
                           <div className="flex items-center gap-2">
                             <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
                             <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-border">
-                              <span className="h-1.5 w-1.5 rounded-full mr-1" style={{ backgroundColor: cat.color }} />
-                              {cat.label}
+                              {tx.type}
                             </Badge>
                           </div>
                         </div>

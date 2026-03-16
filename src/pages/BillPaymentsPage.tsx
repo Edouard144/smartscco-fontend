@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import PortalLayout from "@/components/portal/PortalLayout";
-import { mockStore } from "@/lib/mockData";
+import api from "@/lib/api";
 import { toast } from "sonner";
 
 const BILL_CATEGORIES = [
@@ -20,11 +20,8 @@ const BILL_CATEGORIES = [
   { id: "insurance", label: "Insurance", icon: ShieldCheck, provider: "RSSB / Private", color: "bg-indigo-500/10 text-indigo-600" },
 ];
 
-const RECENT_BILLS = [
-  { id: "bill-1", category: "electricity", account: "0412345678", amount: 15000, date: "2025-03-01", status: "paid" },
-  { id: "bill-2", category: "water", account: "WAS-78901", amount: 8500, date: "2025-02-25", status: "paid" },
-  { id: "bill-3", category: "airtime", account: "+250788300400", amount: 5000, date: "2025-02-20", status: "paid" },
-];
+// No recent bills for new users until the backend implements a separate bill tracking endpoint
+const RECENT_BILLS: any[] = [];
 
 const BillPaymentsPage = () => {
   const [selectedBill, setSelectedBill] = useState<typeof BILL_CATEGORIES[0] | null>(null);
@@ -32,23 +29,22 @@ const BillPaymentsPage = () => {
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handlePay = () => {
+  const handlePay = async () => {
     if (!amount || !accountNumber) {
       toast.error("Please fill all fields");
       return;
     }
     try {
-      mockStore.withdraw(Number(amount));
       setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        toast.success(`${selectedBill?.label} bill paid successfully!`);
-        setSelectedBill(null);
-        setAccountNumber("");
-        setAmount("");
-      }, 1200);
+      await api.post("/wallet/withdraw", { amount: Number(amount), pin: "1234" });
+      setLoading(false);
+      toast.success(`${selectedBill?.label} bill paid successfully!`);
+      setSelectedBill(null);
+      setAccountNumber("");
+      setAmount("");
     } catch (err: any) {
-      toast.error(err.message);
+      setLoading(false);
+      toast.error(err.response?.data?.error || err.message);
     }
   };
 

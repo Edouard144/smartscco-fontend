@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PortalLayout from "@/components/portal/PortalLayout";
-import { mockStore } from "@/lib/mockData";
+import { useAuth } from "@/contexts/AuthContext";
+import api from "@/lib/api";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 const BeneficiariesPage = () => {
@@ -16,20 +18,48 @@ const BeneficiariesPage = () => {
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({ email: "", full_name: "", phone: "" });
 
-  const beneficiaries = mockStore.getBeneficiaries();
+  const { user } = useAuth();
+  const [beneficiaries, setBeneficiaries] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleAdd = () => {
-    mockStore.addBeneficiary(form);
-    toast.success("Beneficiary added!");
-    setAddOpen(false);
-    setForm({ email: "", full_name: "", phone: "" });
-    refresh();
+  const fetchBeneficiaries = async () => {
+    try {
+      const res = await api.get("/beneficiaries");
+      setBeneficiaries(res.data.beneficiaries || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleRemove = (id: string) => {
-    mockStore.removeBeneficiary(id);
-    toast.success("Beneficiary removed");
-    refresh();
+  useEffect(() => {
+    if (user) fetchBeneficiaries();
+  }, [user, forceUpdate]);
+
+  const handleAdd = async () => {
+    try {
+      await api.post("/beneficiaries", { 
+        beneficiary_user_id: Number(form.email), // Repurposing email field as user_id for now
+        nickname: form.full_name 
+      });
+      toast.success("Beneficiary added!");
+      setAddOpen(false);
+      setForm({ email: "", full_name: "", phone: "" });
+      refresh();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || err.message);
+    }
+  };
+
+  const handleRemove = async (id: string) => {
+    try {
+      await api.delete(`/beneficiaries/${id}`);
+      toast.success("Beneficiary removed");
+      refresh();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || err.message);
+    }
   };
 
   return (
@@ -49,9 +79,9 @@ const BeneficiariesPage = () => {
             <DialogContent>
               <DialogHeader><DialogTitle>Add Beneficiary</DialogTitle></DialogHeader>
               <div className="space-y-4 pt-4">
-                <div className="space-y-2"><Label>Full Name</Label><Input placeholder="John Doe" value={form.full_name} onChange={(e) => setForm(p => ({...p, full_name: e.target.value}))} /></div>
-                <div className="space-y-2"><Label>Email</Label><Input type="email" placeholder="john@example.com" value={form.email} onChange={(e) => setForm(p => ({...p, email: e.target.value}))} /></div>
-                <div className="space-y-2"><Label>Phone</Label><Input placeholder="+250788123456" value={form.phone} onChange={(e) => setForm(p => ({...p, phone: e.target.value}))} /></div>
+                <div className="space-y-2"><Label>Nickname / Full Name</Label><Input placeholder="John Doe" value={form.full_name} onChange={(e) => setForm(p => ({...p, full_name: e.target.value}))} /></div>
+                <div className="space-y-2"><Label>User ID</Label><Input type="number" placeholder="Enter recipient's User ID (e.g., 2)" value={form.email} onChange={(e) => setForm(p => ({...p, email: e.target.value}))} /></div>
+                {/* Phone removed as backend doesn't take it directly during add */}
                 <Button onClick={handleAdd} className="w-full bg-gradient-accent text-primary-foreground">Add</Button>
               </div>
             </DialogContent>
@@ -72,15 +102,15 @@ const BeneficiariesPage = () => {
                 <Card className="shadow-card hover:shadow-card-hover transition-shadow">
                   <CardContent className="flex items-center justify-between pt-6">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
-                        {b.full_name?.charAt(0) || "?"}
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-bold uppercase">
+                        {(b.nickname || b.full_name)?.charAt(0) || "?"}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">{b.full_name}</p>
-                        <p className="text-xs text-muted-foreground">{b.email}</p>
+                        <p className="text-sm font-medium text-foreground">{b.nickname || b.full_name}</p>
+                        <p className="text-xs text-muted-foreground">{b.email || b.phone || "No contact info"}</p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => handleRemove(b.id)} className="text-destructive hover:text-destructive">
+                    <Button variant="ghost" size="icon" onClick={() => handleRemove(b.beneficiary_id)} className="text-destructive hover:text-destructive">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </CardContent>

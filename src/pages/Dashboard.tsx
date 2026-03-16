@@ -6,13 +6,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import PortalLayout from "@/components/portal/PortalLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { mockStore } from "@/lib/mockData";
+import api from "@/lib/api";
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const balance = mockStore.getBalance();
-  const transactions = mockStore.getTransactions();
-  const loans = mockStore.getLoans(user?.id);
+  
+  const [balance, setBalance] = useState(0);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loans, setLoans] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [balanceRes, txRes, loansRes] = await Promise.all([
+          api.get("/wallet/balance"),
+          api.get("/wallet/transactions"),
+          api.get("/loans/my-loans")
+        ]);
+        
+        setBalance(Number(balanceRes.data.balance) || 0);
+        setTransactions(txRes.data.transactions || txRes.data || []);
+        setLoans(loansRes.data.loans || loansRes.data || []);
+      } catch (err) {
+        console.error("Failed to fetch dashboard data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
 
   const stats = [
     {
@@ -40,7 +66,7 @@ const Dashboard = () => {
       <div className="space-y-6">
         <div>
           <h1 className="font-display text-2xl font-bold text-foreground">
-            Welcome back, {user?.full_name?.split(" ")[0] || "User"} 👋
+            Welcome back, {user?.full_name ? user.full_name.split(" ")[0] : "User"} 👋
           </h1>
           <p className="text-muted-foreground mt-1">Here's your financial overview</p>
         </div>

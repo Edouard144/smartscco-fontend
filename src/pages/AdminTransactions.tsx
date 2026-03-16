@@ -5,11 +5,32 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import PortalLayout from "@/components/portal/PortalLayout";
-import { mockStore } from "@/lib/mockData";
+import api from "@/lib/api";
+import { useEffect } from "react";
 
 const AdminTransactions = () => {
   const [search, setSearch] = useState("");
-  const transactions = mockStore.getTransactions(search);
+  const [allTransactions, setAllTransactions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const res = await api.get("/admin/transactions");
+        setAllTransactions(res.data.transactions || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, []);
+
+  const transactions = allTransactions.filter((t: any) => 
+    (t.description || t.type).toLowerCase().includes(search.toLowerCase()) || 
+    (t.user_email || "").toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <PortalLayout>
@@ -52,7 +73,7 @@ const AdminTransactions = () => {
                         <span className="capitalize">{tx.type}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{tx.user_email || "—"}</TableCell>
+                    <TableCell>{tx.user_email || tx.user_id || "—"}</TableCell>
                     <TableCell className="font-semibold">{Number(tx.amount).toLocaleString()} RWF</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={tx.status === "completed" ? "bg-accent/10 text-accent" : "bg-gold/10 text-gold"}>

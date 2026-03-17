@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Upload, FileCheck, Clock, CheckCircle, XCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Upload, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import PortalLayout from "@/components/portal/PortalLayout";
 import { toast } from "sonner";
+import api from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 type KYCStatus = "not_submitted" | "pending" | "verified" | "rejected";
 
@@ -17,20 +19,63 @@ const statusConfig: Record<KYCStatus, { label: string; icon: any; color: string 
 };
 
 const KYCPage = () => {
+  const { user } = useAuth();
   const [status, setStatus] = useState<KYCStatus>("not_submitted");
+  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
-  const handleUpload = () => {
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const res = await api.get('/users/profile');
+        const kycStatus = res.data.user?.kyc_status;
+        
+        // Map backend status to frontend status
+        if (!kycStatus) {
+           setStatus("not_submitted");
+        } else if (kycStatus === true || kycStatus === 'verified' || kycStatus === 'active') {
+           setStatus("verified");
+        } else if (kycStatus === 'pending') {
+           setStatus("pending");
+        } else if (kycStatus === 'rejected') {
+           setStatus("rejected");
+        } else {
+           setStatus("not_submitted");
+        }
+      } catch (error) {
+        console.error("Failed to fetch KYC status", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStatus();
+  }, []);
+
+  const handleUpload = async () => {
     setUploading(true);
-    setTimeout(() => {
+    try {
+      await api.post('/users/kyc');
       setStatus("pending");
-      setUploading(false);
       toast.success("Documents submitted for review!");
-    }, 1500);
+    } catch (error) {
+      toast.error("Failed to submit documents. Please try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const config = statusConfig[status];
   const StatusIcon = config.icon;
+
+  if (loading) {
+    return (
+      <PortalLayout>
+        <div className="flex items-center justify-center py-12">
+          <p className="text-muted-foreground">Checking verification status...</p>
+        </div>
+      </PortalLayout>
+    );
+  }
 
   return (
     <PortalLayout>
